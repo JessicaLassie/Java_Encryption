@@ -43,6 +43,11 @@ public class JfEncryption extends javax.swing.JFrame {
         jButtonStart.setEnabled(false);
     }
     
+    /**
+     * Generate key for AES encryption
+     * @return
+     * @throws NoSuchAlgorithmException 
+     */
     private static String generateKey() throws NoSuchAlgorithmException {
         String key = null;
         SecretKey secretKey = KeyGenerator.getInstance("AES").generateKey();
@@ -52,6 +57,13 @@ public class JfEncryption extends javax.swing.JFrame {
         return key;
     }
     
+    /**
+     * Encryption/Decryption
+     * @param mode
+     * @param key
+     * @param inputFile
+     * @param outputFile 
+     */
     private static void encrypt(int mode, String key, File inputFile, File outputFile) {
         try (FileInputStream inputStream = new FileInputStream(inputFile); FileOutputStream outputStream = new FileOutputStream(outputFile)) {
             Key secretKey = new SecretKeySpec(key.getBytes(), "AES");
@@ -63,9 +75,9 @@ public class JfEncryption extends javax.swing.JFrame {
                 outputStream.write(outputBytes);
             }
         } catch (FileNotFoundException ex) {
-            System.out.println("Erreur : " + ex);
+            System.out.println(ex);
         } catch (IOException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException ex) {
-            System.out.println("Erreur : " + ex);
+            System.out.println(ex);
         }
     }
 
@@ -80,24 +92,12 @@ public class JfEncryption extends javax.swing.JFrame {
 
         buttonGroup = new javax.swing.ButtonGroup();
         jFileChooser = new javax.swing.JFileChooser();
-        jDialog1 = new javax.swing.JDialog();
         jLabelFile = new javax.swing.JLabel();
         jButtonSearchFile = new javax.swing.JButton();
         jTextFieldFile = new javax.swing.JTextField();
         jButtonStart = new javax.swing.JButton();
         jRadioButtonEncrypt = new javax.swing.JRadioButton();
         jRadioButtonDecrypt = new javax.swing.JRadioButton();
-
-        javax.swing.GroupLayout jDialog1Layout = new javax.swing.GroupLayout(jDialog1.getContentPane());
-        jDialog1.getContentPane().setLayout(jDialog1Layout);
-        jDialog1Layout.setHorizontalGroup(
-            jDialog1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
-        );
-        jDialog1Layout.setVerticalGroup(
-            jDialog1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
-        );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("AES");
@@ -180,7 +180,7 @@ public class JfEncryption extends javax.swing.JFrame {
 
     private void jButtonStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStartActionPerformed
         File inputFile = new File(jFileChooser.getSelectedFile().getAbsolutePath());
-        File outputFile = new File(jFileChooser.getSelectedFile().getAbsolutePath() + "_crypted");
+        File outputFile = new File(jFileChooser.getSelectedFile().getAbsolutePath());
         int mode = Cipher.ENCRYPT_MODE;
         if (jRadioButtonDecrypt.isSelected()) {
             mode = Cipher.DECRYPT_MODE;
@@ -193,7 +193,7 @@ public class JfEncryption extends javax.swing.JFrame {
                 System.out.println("Clé nulle !");
             }
         } catch (NoSuchAlgorithmException ex) {
-            System.out.println("Erreur : " + ex);
+            System.out.println(ex);
         }
         
         
@@ -240,7 +240,6 @@ public class JfEncryption extends javax.swing.JFrame {
     private javax.swing.ButtonGroup buttonGroup;
     private javax.swing.JButton jButtonSearchFile;
     private javax.swing.JButton jButtonStart;
-    private javax.swing.JDialog jDialog1;
     private javax.swing.JFileChooser jFileChooser;
     private javax.swing.JLabel jLabelFile;
     private javax.swing.JRadioButton jRadioButtonDecrypt;
