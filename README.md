@@ -1,4 +1,9 @@
 # Java_Encryption
 
 To do :
-- update output file name
+- create a file with AES key for encrypt
+- decrypt AES
+- encrypt/decrypt RSA
+
+Done :
+- encrypt AES
