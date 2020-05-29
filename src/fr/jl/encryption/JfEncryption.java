@@ -5,15 +5,20 @@
  */
 package fr.jl.encryption;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
+import java.util.Base64;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -47,14 +52,60 @@ public class JfEncryption extends javax.swing.JFrame {
     
     /**
      * Generate key for AES encryption
-     * @return
+     * @return key
      * @throws NoSuchAlgorithmException 
      */
-    private static SecretKey generateAESKey() throws NoSuchAlgorithmException {
-        KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+    private SecretKey generateAESKey() throws NoSuchAlgorithmException {
+        KeyGenerator keyGen = KeyGenerator.getInstance(AES);
         keyGen.init(128);
         SecretKey secretKey = keyGen.generateKey();
         return secretKey;
+    }
+    
+    /**
+     * Create format file
+     * @param mode
+     * @return file for encrypt or decrypt
+     */
+    private File preFormating(final int mode) {
+        SimpleDateFormat formater = new SimpleDateFormat("yyyyMMddHHmmss");
+        final String date = formater.format(new Date());
+        final int pos = jFileChooser.getSelectedFile().getAbsolutePath().indexOf('.');
+        final String filePath = jFileChooser.getSelectedFile().getAbsolutePath();
+        String modeType = "";
+        switch (mode) {
+            case 1:
+                modeType = "_encrypted_";
+                break;
+            case 2:
+                modeType = "_decrypted_";
+                break;
+        }
+        return new File(filePath.substring(0, pos) + modeType + date + filePath.substring(pos, filePath.length()));
+    }
+    
+    /**
+     * Save key in a text file
+     * @param key
+     * @param keyFilePath
+     * @return file with key
+     */
+    private static File saveKey(final SecretKey key, final String keyFilePath) {
+        SimpleDateFormat formater = new SimpleDateFormat("yyyyMMddHHmmss");
+        final String date = formater.format(new Date());
+        File keyFile = new File(keyFilePath + "\\key_" + date + ".txt");
+        try {
+            byte encoded[] = key.getEncoded();
+            final String encodedKey = Base64.getEncoder().encodeToString(encoded);   
+            keyFile.createNewFile();
+            FileWriter fw = new FileWriter(keyFile.getAbsoluteFile());
+            BufferedWriter bw = new BufferedWriter(fw);
+            bw.write(encodedKey);
+            bw.close();
+        } catch (IOException e) {
+            
+        }
+        return keyFile;
     }
     
     /**
@@ -64,9 +115,9 @@ public class JfEncryption extends javax.swing.JFrame {
      * @param inputFile
      * @param outputFile 
      */
-    private static void encryptAES(int mode, SecretKey key, File inputFile, File outputFile) {
+    private void encryptAES(final int mode, final SecretKey key, File inputFile, File outputFile) {
         try (FileInputStream inputStream = new FileInputStream(inputFile); FileOutputStream outputStream = new FileOutputStream(outputFile)) {
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            Cipher cipher = Cipher.getInstance(AES);
             cipher.init(mode, key);
             byte[] inputBytes = new byte[(int)inputFile.length()];
             while (inputStream.read(inputBytes)>0) {
@@ -175,7 +226,7 @@ public class JfEncryption extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonSearchFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSearchFileActionPerformed
-        int value = jFileChooser.showOpenDialog(this);
+        final int value = jFileChooser.showOpenDialog(this);
         if(value == JFileChooser.APPROVE_OPTION){
             jFileChooser.getSelectedFile().getAbsolutePath();
             jTextFieldFile.setText(jFileChooser.getSelectedFile().getName());
@@ -185,29 +236,30 @@ public class JfEncryption extends javax.swing.JFrame {
 
     private void jButtonStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStartActionPerformed
         File inputFile = new File(jFileChooser.getSelectedFile().getAbsolutePath());
-        SimpleDateFormat formater = new SimpleDateFormat("yyyyMMddHHmmss");
-        String date = formater.format(new Date());
-        int pos = jFileChooser.getSelectedFile().getAbsolutePath().indexOf('.');
-        String filePath = jFileChooser.getSelectedFile().getAbsolutePath();
-        File outputFile = new File(filePath.substring(0, pos) + "_encrypted_" + date + filePath.substring(pos, filePath.length()));
-        int mode = Cipher.ENCRYPT_MODE;
-        if (jRadioButtonDecrypt.isSelected()) {
-            System.out.println("non développé");
-        }      
-        if (jComboBoxEncrypt.getSelectedItem() == "AES") {           
-            try {
-                SecretKey key = generateAESKey();
-                if (key != null){
-                    encryptAES(mode, key, inputFile, outputFile);     
-                } else {
-                    System.out.println("Clé nulle !");
+        switch (jComboBoxEncrypt.getSelectedItem().toString()) {
+            case AES:
+                if (jRadioButtonEncrypt.isSelected()) {
+                    int mode = Cipher.ENCRYPT_MODE;
+                    File outputFile = preFormating(mode);
+                    try {
+                        SecretKey key = generateAESKey();
+                        File keyFile = saveKey(key, outputFile.getParent());
+                        if (key != null && keyFile.exists()){
+                            encryptAES(mode, key, inputFile, outputFile);     
+                        } else {
+                            System.out.println("Erreur lors de la génération ou sauvegarde de la clé !");
+                        }
+                    } catch (NoSuchAlgorithmException ex) {
+                        System.out.println(ex);
+                    }
                 }
-            } catch (NoSuchAlgorithmException ex) {
-                System.out.println(ex);
-            }
-        }
-        if (jComboBoxEncrypt.getSelectedItem() == "RSA") {
-            System.out.println("non développé");
+                if (jRadioButtonDecrypt.isSelected()) {
+                    System.out.println("Decryptage non développé");
+                }
+                break;
+            case RSA:
+                System.out.println("RSA non développé"); 
+                break;
         }
     }//GEN-LAST:event_jButtonStartActionPerformed
 
