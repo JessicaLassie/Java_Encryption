@@ -39,7 +39,12 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" pref="41" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                  <Group type="102" attributes="0">
+                      <Component id="jLabelKey" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jTextFieldKey" max="32767" attributes="0"/>
+                  </Group>
                   <Component id="jLabelEncrypt" min="-2" max="-2" attributes="0"/>
                   <Component id="jComboBoxEncrypt" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabelFile" min="-2" max="-2" attributes="0"/>
@@ -52,10 +57,10 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="jButtonSearchFile" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jTextFieldFile" min="-2" pref="289" max="-2" attributes="0"/>
+                      <Component id="jTextFieldFile" min="-2" pref="184" max="-2" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace pref="49" max="32767" attributes="0"/>
+              <EmptySpace pref="43" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -66,6 +71,11 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jRadioButtonEncrypt" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jRadioButtonDecrypt" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace pref="23" max="32767" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="jTextFieldKey" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jLabelKey" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="jLabelEncrypt" min="-2" max="-2" attributes="0"/>
@@ -80,7 +90,7 @@
               </Group>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="jButtonStart" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="38" max="32767" attributes="0"/>
+              <EmptySpace min="-2" pref="35" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -113,11 +123,17 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="Crypter"/>
       </Properties>
+      <Events>
+        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="jRadioButtonEncryptStateChanged"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JRadioButton" name="jRadioButtonDecrypt">
       <Properties>
         <Property name="text" type="java.lang.String" value="D&#xe9;crypter"/>
       </Properties>
+      <Events>
+        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="jRadioButtonDecryptStateChanged"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JComboBox" name="jComboBoxEncrypt">
       <Properties>
@@ -132,6 +148,13 @@
     <Component class="javax.swing.JLabel" name="jLabelEncrypt">
       <Properties>
         <Property name="text" type="java.lang.String" value="Selectionnez un chiffrage"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="jTextFieldKey">
+    </Component>
+    <Component class="javax.swing.JLabel" name="jLabelKey">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Cl&#xe9;"/>
       </Properties>
     </Component>
   </SubComponents>

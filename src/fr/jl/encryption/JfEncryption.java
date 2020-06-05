@@ -25,6 +25,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import javax.swing.JFileChooser;
 
 /**
@@ -48,6 +49,7 @@ public class JfEncryption extends javax.swing.JFrame {
         jButtonStart.setEnabled(false);
         jComboBoxEncrypt.addItem(AES);
         jComboBoxEncrypt.addItem(RSA);
+        jTextFieldKey.setEnabled(false);
     }
     
     /**
@@ -150,6 +152,8 @@ public class JfEncryption extends javax.swing.JFrame {
         jRadioButtonDecrypt = new javax.swing.JRadioButton();
         jComboBoxEncrypt = new javax.swing.JComboBox<>();
         jLabelEncrypt = new javax.swing.JLabel();
+        jTextFieldKey = new javax.swing.JTextField();
+        jLabelKey = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Encryption");
@@ -174,10 +178,22 @@ public class JfEncryption extends javax.swing.JFrame {
         });
 
         jRadioButtonEncrypt.setText("Crypter");
+        jRadioButtonEncrypt.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                jRadioButtonEncryptStateChanged(evt);
+            }
+        });
 
         jRadioButtonDecrypt.setText("Décrypter");
+        jRadioButtonDecrypt.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                jRadioButtonDecryptStateChanged(evt);
+            }
+        });
 
         jLabelEncrypt.setText("Selectionnez un chiffrage");
+
+        jLabelKey.setText("Clé");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -185,7 +201,11 @@ public class JfEncryption extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(41, 41, 41)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabelKey)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jTextFieldKey))
                     .addComponent(jLabelEncrypt)
                     .addComponent(jComboBoxEncrypt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabelFile)
@@ -197,8 +217,8 @@ public class JfEncryption extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jButtonSearchFile)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTextFieldFile, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(49, Short.MAX_VALUE))
+                        .addComponent(jTextFieldFile, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(43, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -207,6 +227,10 @@ public class JfEncryption extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jRadioButtonEncrypt)
                     .addComponent(jRadioButtonDecrypt))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 23, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jTextFieldKey, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabelKey))
                 .addGap(18, 18, 18)
                 .addComponent(jLabelEncrypt)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -219,7 +243,7 @@ public class JfEncryption extends javax.swing.JFrame {
                     .addComponent(jButtonSearchFile))
                 .addGap(18, 18, 18)
                 .addComponent(jButtonStart)
-                .addContainerGap(38, Short.MAX_VALUE))
+                .addGap(35, 35, 35))
         );
 
         pack();
@@ -254,7 +278,15 @@ public class JfEncryption extends javax.swing.JFrame {
                     }
                 }
                 if (jRadioButtonDecrypt.isSelected()) {
-                    System.out.println("Decryptage non développé");
+                    int mode = Cipher.DECRYPT_MODE;
+                    File outputFile = preFormating(mode);
+                    try {
+                        byte[] decodedKey = Base64.getDecoder().decode(jTextFieldKey.getText());
+                        SecretKey key = new SecretKeySpec(decodedKey, 0, decodedKey.length, AES); 
+                        encryptAES(mode, key, inputFile, outputFile);     
+                    } catch (Exception e) {
+                        System.out.println(e);
+                    }
                 }
                 break;
             case RSA:
@@ -262,6 +294,18 @@ public class JfEncryption extends javax.swing.JFrame {
                 break;
         }
     }//GEN-LAST:event_jButtonStartActionPerformed
+
+    private void jRadioButtonDecryptStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jRadioButtonDecryptStateChanged
+        if (jRadioButtonDecrypt.isSelected()) {
+            jTextFieldKey.setEnabled(true);
+        }
+    }//GEN-LAST:event_jRadioButtonDecryptStateChanged
+
+    private void jRadioButtonEncryptStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jRadioButtonEncryptStateChanged
+        if (jRadioButtonEncrypt.isSelected()) {
+            jTextFieldKey.setEnabled(false);
+        }
+    }//GEN-LAST:event_jRadioButtonEncryptStateChanged
 
     /**
      * @param args the command line arguments
@@ -307,8 +351,10 @@ public class JfEncryption extends javax.swing.JFrame {
     private javax.swing.JFileChooser jFileChooser;
     private javax.swing.JLabel jLabelEncrypt;
     private javax.swing.JLabel jLabelFile;
+    private javax.swing.JLabel jLabelKey;
     private javax.swing.JRadioButton jRadioButtonDecrypt;
     private javax.swing.JRadioButton jRadioButtonEncrypt;
     private javax.swing.JTextField jTextFieldFile;
+    private javax.swing.JTextField jTextFieldKey;
     // End of variables declaration//GEN-END:variables
 }
