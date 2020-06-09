@@ -1,14 +1,12 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) Jessica LASSIE from 2020 to present
+ * All right reserved
  */
 package fr.jl.encryption;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -17,8 +15,6 @@ import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.Base64;
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -30,12 +26,12 @@ import javax.swing.JFileChooser;
 
 /**
  *
- * @author Jessica
+ * @author Jessica LASSIE
  */
 public class JfEncryption extends javax.swing.JFrame {
     
-    private final String AES = "AES";
-    private final String RSA = "RSA";
+    private static final String AES = "AES";
+    private static final String RSA = "RSA";
 
     /**
      * Creates new form NewJFrame
@@ -53,11 +49,11 @@ public class JfEncryption extends javax.swing.JFrame {
     }
     
     /**
-     * Generate key for AES encryption
+     * Generate key in 128 bits for AES encryption
      * @return key
      * @throws NoSuchAlgorithmException 
      */
-    private SecretKey generateAESKey() throws NoSuchAlgorithmException {
+    private static SecretKey generateAESKey() throws NoSuchAlgorithmException {
         KeyGenerator keyGen = KeyGenerator.getInstance(AES);
         keyGen.init(128);
         SecretKey secretKey = keyGen.generateKey();
@@ -92,18 +88,15 @@ public class JfEncryption extends javax.swing.JFrame {
      * @param keyFilePath
      * @return file with key
      */
-    private static File saveKey(final SecretKey key, final String keyFilePath) {
+    private static File saveAESKey(final SecretKey key, final String keyFilePath) {
         SimpleDateFormat formater = new SimpleDateFormat("yyyyMMddHHmmss");
         final String date = formater.format(new Date());
         File keyFile = new File(keyFilePath + "\\key_" + date + ".txt");
-        try {
+        try (FileWriter fw = new FileWriter(keyFile.getAbsoluteFile()); BufferedWriter bw = new BufferedWriter(fw)){
             byte encoded[] = key.getEncoded();
             final String encodedKey = Base64.getEncoder().encodeToString(encoded);   
             keyFile.createNewFile();
-            FileWriter fw = new FileWriter(keyFile.getAbsoluteFile());
-            BufferedWriter bw = new BufferedWriter(fw);
             bw.write(encodedKey);
-            bw.close();
         } catch (IOException e) {
             
         }
@@ -111,13 +104,13 @@ public class JfEncryption extends javax.swing.JFrame {
     }
     
     /**
-     * Encryption/Decryption
+     * Encryption/Decryption in AES
      * @param mode
      * @param key
      * @param inputFile
      * @param outputFile 
      */
-    private void encryptAES(final int mode, final SecretKey key, File inputFile, File outputFile) {
+    private static void encryptAES(final int mode, final SecretKey key, File inputFile, File outputFile) {
         try (FileInputStream inputStream = new FileInputStream(inputFile); FileOutputStream outputStream = new FileOutputStream(outputFile)) {
             Cipher cipher = Cipher.getInstance(AES);
             cipher.init(mode, key);
@@ -126,8 +119,6 @@ public class JfEncryption extends javax.swing.JFrame {
                 byte[] outputBytes = cipher.doFinal(inputBytes);
                 outputStream.write(outputBytes);
             }
-        } catch (FileNotFoundException ex) {
-            System.out.println(ex);
         } catch (IOException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException ex) {
             System.out.println(ex);
         }
@@ -267,7 +258,7 @@ public class JfEncryption extends javax.swing.JFrame {
                     File outputFile = preFormating(mode);
                     try {
                         SecretKey key = generateAESKey();
-                        File keyFile = saveKey(key, outputFile.getParent());
+                        File keyFile = saveAESKey(key, outputFile.getParent());
                         if (key != null && keyFile.exists()){
                             encryptAES(mode, key, inputFile, outputFile);     
                         } else {
