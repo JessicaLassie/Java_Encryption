@@ -41,6 +41,7 @@ public class JfEncryption extends javax.swing.JFrame {
         jTextFieldKey.setEnabled(false);
         jDialogError.setSize(170, 140);
         jDialogSuccess.setSize(170, 140);
+        jButtonStart.setEnabled(false);
         
     }
 
@@ -238,7 +239,8 @@ public class JfEncryption extends javax.swing.JFrame {
         final int value = jFileChooser.showOpenDialog(this);
         if(value == JFileChooser.APPROVE_OPTION){
             jFileChooser.getSelectedFile().getAbsolutePath();
-            jLabelSelectedFile.setText(jFileChooser.getSelectedFile().getName());        
+            jLabelSelectedFile.setText(jFileChooser.getSelectedFile().getName());
+            jButtonStart.setEnabled(true);
         }
     }//GEN-LAST:event_jButtonSearchFileActionPerformed
 
@@ -263,16 +265,21 @@ public class JfEncryption extends javax.swing.JFrame {
                     }
                 }
                 if (jRadioButtonDecrypt.isSelected()) {
-                    int mode = Cipher.DECRYPT_MODE;
-                    File outputFile = ControllerEncryption.preFormating(mode, filePath);
-                    try {
-                        byte[] decodedKey = Base64.getDecoder().decode(jTextFieldKey.getText());
-                        SecretKey key = new SecretKeySpec(decodedKey, 0, decodedKey.length, AES); 
-                        ControllerEncryption.cryptingAES(mode, key, inputFile, outputFile);
-                        jDialogSuccess.setVisible(true);
-                    } catch (IOException | InvalidKeyException | NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException ex) {
+                    if (jTextFieldKey.getText().length() != 16) {
                         jDialogError.setVisible(true);
-                        jLabelError.setText(ex.getMessage());
+                        jLabelError.setText("Invalid key length");
+                    } else {
+                        int mode = Cipher.DECRYPT_MODE;
+                        File outputFile = ControllerEncryption.preFormating(mode, filePath);
+                        try {
+                            byte[] decodedKey = Base64.getDecoder().decode(jTextFieldKey.getText());
+                            SecretKey key = new SecretKeySpec(decodedKey, 0, decodedKey.length, AES); 
+                            ControllerEncryption.cryptingAES(mode, key, inputFile, outputFile);
+                            jDialogSuccess.setVisible(true);
+                        } catch (IOException | InvalidKeyException | NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException ex) {
+                            jDialogError.setVisible(true);
+                            jLabelError.setText(ex.getMessage());
+                        }
                     }
                 }
                 break;
