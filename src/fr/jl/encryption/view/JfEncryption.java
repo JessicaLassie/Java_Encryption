@@ -1,24 +1,18 @@
 /*
  * Copyright (C) Jessica LASSIE from 2020 to present
- * All right reserved
+ * All rights reserved
  */
-package fr.jl.encryption;
+package fr.jl.encryption.view;
 
-import java.io.BufferedWriter;
+import fr.jl.encryption.controller.ControllerEncryption;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.text.SimpleDateFormat;
 import java.util.Base64;
-import java.util.Date;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -42,93 +36,12 @@ public class JfEncryption extends javax.swing.JFrame {
         buttonGroup.add(jRadioButtonDecrypt);
         buttonGroup.add(jRadioButtonEncrypt);
         jRadioButtonEncrypt.setSelected(true);
-        jButtonStart.setEnabled(false);
         jComboBoxEncrypt.addItem(AES);
         jComboBoxEncrypt.addItem(RSA);
         jTextFieldKey.setEnabled(false);
         jDialogError.setSize(170, 140);
         jDialogSuccess.setSize(170, 140);
-    }
-    
-    /**
-     * Generate key in 128 bits for AES encryption
-     * @return key
-     * @throws NoSuchAlgorithmException 
-     */
-    private static SecretKey generateAESKey() throws NoSuchAlgorithmException {
-        KeyGenerator keyGen = KeyGenerator.getInstance(AES);
-        keyGen.init(128);
-        SecretKey secretKey = keyGen.generateKey();
-        return secretKey;
-    }
-    
-    /**
-     * Create format file
-     * @param mode
-     * @return file for encrypt or decrypt output
-     */
-    private File preFormating(final int mode) {
-        SimpleDateFormat formater = new SimpleDateFormat("yyyyMMddHHmmss");
-        final String date = formater.format(new Date());
-        final int pos = jFileChooser.getSelectedFile().getAbsolutePath().indexOf('.');
-        final String filePath = jFileChooser.getSelectedFile().getAbsolutePath();
-        String modeType = "";
-        switch (mode) {
-            case 1:
-                modeType = "_encrypted_";
-                break;
-            case 2:
-                modeType = "_decrypted_";
-                break;
-            default :
-                break;
-        }
-        return new File(filePath.substring(0, pos) + modeType + date + filePath.substring(pos, filePath.length()));
-    }
-    
-    /**
-     * Save key in a text file
-     * @param key
-     * @param keyFilePath
-     * @return file with key
-     */
-    private File saveAESKey(final SecretKey key, final String keyFilePath) {
-        SimpleDateFormat formater = new SimpleDateFormat("yyyyMMddHHmmss");
-        final String date = formater.format(new Date());
-        File keyFile = new File(keyFilePath + "\\key_" + date + ".txt");
-        try (FileWriter fw = new FileWriter(keyFile.getAbsoluteFile()); BufferedWriter bw = new BufferedWriter(fw)){
-            byte encoded[] = key.getEncoded();
-            final String encodedKey = Base64.getEncoder().encodeToString(encoded);   
-            keyFile.createNewFile();
-            bw.write(encodedKey);
-        } catch (IOException e) {
-            jDialogError.setVisible(true);
-            jLabelError.setText(e.getMessage());
-        }
-        return keyFile;
-    }
-    
-    /**
-     * Encryption/Decryption in AES
-     * @param mode
-     * @param key
-     * @param inputFile
-     * @param outputFile 
-     */
-    private void cryptingAES(final int mode, final SecretKey key, File inputFile, File outputFile) {
-        try (FileInputStream inputStream = new FileInputStream(inputFile); FileOutputStream outputStream = new FileOutputStream(outputFile)) {
-            Cipher cipher = Cipher.getInstance(AES);
-            cipher.init(mode, key);
-            byte[] inputBytes = new byte[(int)inputFile.length()];
-            while (inputStream.read(inputBytes)>0) {
-                byte[] outputBytes = cipher.doFinal(inputBytes);
-                outputStream.write(outputBytes);
-            }
-            jDialogSuccess.setVisible(true);
-        } catch (IOException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException ex) {
-            jDialogError.setVisible(true);
-            jLabelError.setText(ex.getMessage());
-        }
+        
     }
 
     /**
@@ -229,7 +142,6 @@ public class JfEncryption extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Encryption");
-        setMaximumSize(new java.awt.Dimension(431, 213));
         setResizable(false);
         setSize(new java.awt.Dimension(431, 213));
 
@@ -326,39 +238,41 @@ public class JfEncryption extends javax.swing.JFrame {
         final int value = jFileChooser.showOpenDialog(this);
         if(value == JFileChooser.APPROVE_OPTION){
             jFileChooser.getSelectedFile().getAbsolutePath();
-            jLabelSelectedFile.setText(jFileChooser.getSelectedFile().getName());
-            jButtonStart.setEnabled(true);
+            jLabelSelectedFile.setText(jFileChooser.getSelectedFile().getName());        
         }
     }//GEN-LAST:event_jButtonSearchFileActionPerformed
 
     private void jButtonStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStartActionPerformed
-        File inputFile = new File(jFileChooser.getSelectedFile().getAbsolutePath());
+        final String filePath = jFileChooser.getSelectedFile().getAbsolutePath();
+        File inputFile = new File(filePath);
         switch (jComboBoxEncrypt.getSelectedItem().toString()) {
             case AES:
                 if (jRadioButtonEncrypt.isSelected()) {
                     int mode = Cipher.ENCRYPT_MODE;
-                    File outputFile = preFormating(mode);
+                    File outputFile = ControllerEncryption.preFormating(mode, filePath);
                     try {
-                        SecretKey key = generateAESKey();
-                        File keyFile = saveAESKey(key, outputFile.getParent());
+                        SecretKey key = ControllerEncryption.generateAESKey();
+                        File keyFile = ControllerEncryption.saveAESKey(key, outputFile.getParent());
                         if (key != null && keyFile.exists()){
-                            cryptingAES(mode, key, inputFile, outputFile);     
-                        }                  
-                    } catch (NoSuchAlgorithmException ex) {
+                            ControllerEncryption.cryptingAES(mode, key, inputFile, outputFile);
+                            jDialogSuccess.setVisible(true);
+                        }                      
+                    } catch (NoSuchAlgorithmException | IOException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException ex) {
                         jDialogError.setVisible(true);
                         jLabelError.setText(ex.getMessage());
                     }
                 }
                 if (jRadioButtonDecrypt.isSelected()) {
                     int mode = Cipher.DECRYPT_MODE;
-                    File outputFile = preFormating(mode);
+                    File outputFile = ControllerEncryption.preFormating(mode, filePath);
                     try {
                         byte[] decodedKey = Base64.getDecoder().decode(jTextFieldKey.getText());
                         SecretKey key = new SecretKeySpec(decodedKey, 0, decodedKey.length, AES); 
-                        cryptingAES(mode, key, inputFile, outputFile);     
-                    } catch (Exception e) {
+                        ControllerEncryption.cryptingAES(mode, key, inputFile, outputFile);
+                        jDialogSuccess.setVisible(true);
+                    } catch (IOException | InvalidKeyException | NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException ex) {
                         jDialogError.setVisible(true);
-                        jLabelError.setText(e.getMessage());
+                        jLabelError.setText(ex.getMessage());
                     }
                 }
                 break;
