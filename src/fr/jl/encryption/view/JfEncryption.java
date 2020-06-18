@@ -8,7 +8,9 @@ import fr.jl.encryption.controller.ControllerEncryption;
 import java.io.File;
 import java.io.IOException;
 import java.security.InvalidKeyException;
+import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -142,7 +144,7 @@ public class JfEncryption extends javax.swing.JFrame {
         );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Encryption");
+        setTitle("Encryptor");
         setResizable(false);
         setSize(new java.awt.Dimension(431, 213));
 
@@ -265,26 +267,41 @@ public class JfEncryption extends javax.swing.JFrame {
                     }
                 }
                 if (jRadioButtonDecrypt.isSelected()) {
-                    if (jTextFieldKey.getText().length() != 16) {
+                    int mode = Cipher.DECRYPT_MODE;
+                    File outputFile = ControllerEncryption.preFormating(mode, filePath);
+                    try {
+                        byte[] decodedKey = Base64.getDecoder().decode(jTextFieldKey.getText());
+                        SecretKey key = new SecretKeySpec(decodedKey, 0, decodedKey.length, AES); 
+                        ControllerEncryption.cryptingAES(mode, key, inputFile, outputFile);
+                        jDialogSuccess.setVisible(true);
+                    } catch (IOException | InvalidKeyException | NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException | IllegalArgumentException ex) {
                         jDialogError.setVisible(true);
-                        jLabelError.setText("Invalid key length");
-                    } else {
-                        int mode = Cipher.DECRYPT_MODE;
-                        File outputFile = ControllerEncryption.preFormating(mode, filePath);
-                        try {
-                            byte[] decodedKey = Base64.getDecoder().decode(jTextFieldKey.getText());
-                            SecretKey key = new SecretKeySpec(decodedKey, 0, decodedKey.length, AES); 
-                            ControllerEncryption.cryptingAES(mode, key, inputFile, outputFile);
-                            jDialogSuccess.setVisible(true);
-                        } catch (IOException | InvalidKeyException | NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException ex) {
-                            jDialogError.setVisible(true);
-                            jLabelError.setText(ex.getMessage());
-                        }
+                        jLabelError.setText(ex.getMessage());
                     }
                 }
                 break;
             case RSA:
-                //TO DO
+                if (jRadioButtonEncrypt.isSelected()) {
+                    int mode = Cipher.ENCRYPT_MODE;
+                    File outputFile = ControllerEncryption.preFormating(mode, filePath);
+                    try {
+                        KeyPair keyPair = ControllerEncryption.generateRSAKey();
+                        File privateKeyFile = ControllerEncryption.saveRSAPrivateKey(keyPair.getPrivate(), outputFile.getParent());
+                        File publicKeyFile = ControllerEncryption.saveRSAPublicKey(keyPair.getPublic(), outputFile.getParent());
+                        if (keyPair != null && privateKeyFile.exists() && publicKeyFile.exists()){
+                            //ControllerEncryption.encryptRSA(mode, key, inputFile, outputFile);
+                            jDialogSuccess.setVisible(true);
+                        }                      
+                    } catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
+                        jDialogError.setVisible(true);
+                        jLabelError.setText(ex.getMessage());
+                    }
+                }
+                if (jRadioButtonDecrypt.isSelected()) {
+                    int mode = Cipher.DECRYPT_MODE;
+                    File outputFile = ControllerEncryption.preFormating(mode, filePath);
+                    
+                }
                 break;
             default :
                 break;
