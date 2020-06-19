@@ -16,7 +16,6 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPrivateKeySpec;
 import java.text.SimpleDateFormat;
@@ -161,14 +160,6 @@ public class ControllerEncryption {
                
         }
         return privateKeyFile;
-    }
-    
-    public static File saveRSAPublicKey(final PublicKey publicKey, final String publicKeyFilePath) {
-        SimpleDateFormat formater = new SimpleDateFormat("yyyyMMddHHmmss");
-        final String date = formater.format(new Date());
-        File publicKeyFile = new File(publicKeyFilePath + "\\key_" + date + ".txt");
-        
-        return publicKeyFile;
     }
     
     
