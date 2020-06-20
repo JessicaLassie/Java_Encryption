@@ -4,18 +4,22 @@
  */
 package fr.jl.encryption.controller;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPrivateKeySpec;
 import java.text.SimpleDateFormat;
@@ -98,7 +102,7 @@ public class ControllerEncryption {
     }
     
     /**
-     * Encryption/Decryption in AES
+     * Encryption/Decryption file in AES
      * @param mode encrypt or decrypt mode
      * @param key in 128 bits
      * @param inputFile file to encrypt or decrypt
@@ -148,20 +152,48 @@ public class ControllerEncryption {
      * @return file with private key
      * @throws InvalidKeySpecException
      * @throws NoSuchAlgorithmException 
+     * @throws FileNotFoundException 
      */
-    public static File saveRSAPrivateKey(final PrivateKey privateKey, final String privateKeyFilePath) throws InvalidKeySpecException, NoSuchAlgorithmException {
+    public static File saveRSAPrivateKey(final PrivateKey privateKey, final String privateKeyFilePath) throws InvalidKeySpecException, NoSuchAlgorithmException, FileNotFoundException, IOException {
         SimpleDateFormat formater = new SimpleDateFormat("yyyyMMddHHmmss");
         final String date = formater.format(new Date());
         File privateKeyFile = new File(privateKeyFilePath + "\\key_" + date + ".txt");
         KeyFactory factory = KeyFactory.getInstance(RSA);
         RSAPrivateKeySpec specification = factory.getKeySpec(privateKey, RSAPrivateKeySpec.class);
         if (specification != null) {
-
-               
+            try (ObjectOutputStream outputFile = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(privateKeyFile)))) {
+                outputFile.writeObject(specification.getModulus());
+                outputFile.writeObject(specification.getPrivateExponent());
+            }              
         }
         return privateKeyFile;
     }
     
+    /**
+     * Encrypt file in RSA
+     * @param mode encrypt or decrypt mode
+     * @param publicKey public key RSA
+     * @param inputFile file to encrypt
+     * @param outputFile encrypted file
+     * @throws FileNotFoundException
+     * @throws IOException
+     * @throws InvalidKeyException
+     * @throws NoSuchAlgorithmException
+     * @throws NoSuchPaddingException
+     * @throws IllegalBlockSizeException
+     * @throws BadPaddingException 
+     */
+    public static void encryptRSA(final int mode, final PublicKey publicKey, File inputFile, File outputFile) throws FileNotFoundException, IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+        try (FileInputStream inputStream = new FileInputStream(inputFile); FileOutputStream outputStream = new FileOutputStream(outputFile)) {
+            Cipher cipher = Cipher.getInstance(RSA);
+            cipher.init(mode, publicKey);
+            byte[] inputBytes = new byte[inputFile.toString().length()];
+            while (inputStream.read(inputBytes) > -1) {
+                byte[] outputBytes = cipher.doFinal(inputBytes);
+                outputStream.write(outputBytes);
+            }
+        }
+    }
     
     
 }

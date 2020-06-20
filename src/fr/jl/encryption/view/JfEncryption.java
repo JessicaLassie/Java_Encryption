@@ -313,12 +313,11 @@ public class JfEncryption extends javax.swing.JFrame {
                     try {
                         KeyPair keyPair = ControllerEncryption.generateRSAKey();
                         File privateKeyFile = ControllerEncryption.saveRSAPrivateKey(keyPair.getPrivate(), outputFile.getParent());
-
-                        if (keyPair != null && privateKeyFile.exists()){
-                            //ControllerEncryption.encryptRSA(mode, keyPair.getPublic(), inputFile, outputFile);
+                        if (privateKeyFile.exists()){
+                            ControllerEncryption.encryptRSA(mode, keyPair.getPublic(), inputFile, outputFile);
                             jDialogSuccess.setVisible(true);
                         }                      
-                    } catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
+                    } catch (NoSuchAlgorithmException | InvalidKeySpecException | IOException | InvalidKeyException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException ex) {
                         jDialogError.setVisible(true);
                         jLabelError.setText(ex.getMessage());
                     }
