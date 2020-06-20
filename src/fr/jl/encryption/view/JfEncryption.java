@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 import javax.crypto.BadPaddingException;
@@ -325,7 +326,15 @@ public class JfEncryption extends javax.swing.JFrame {
                 if (jRadioButtonDecrypt.isSelected()) {
                     int mode = Cipher.DECRYPT_MODE;
                     File outputFile = ControllerEncryption.preFormating(mode, filePath);
-                    
+                    try {
+                        final String keyFilePath = jFileKeyChooser.getSelectedFile().getAbsolutePath();
+                        PrivateKey privateKey = ControllerEncryption.getPrivateKey(keyFilePath);
+                        ControllerEncryption.decryptRSA(mode, privateKey, inputFile, outputFile);
+                        jDialogSuccess.setVisible(true);
+                    } catch (IOException | NoSuchAlgorithmException | IllegalArgumentException | ClassNotFoundException | InvalidKeySpecException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException ex) {
+                        jDialogError.setVisible(true);
+                        jLabelError.setText(ex.getMessage());
+                    }
                 }
                 break;
             default :

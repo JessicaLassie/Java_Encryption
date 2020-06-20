@@ -4,6 +4,7 @@
  */
 package fr.jl.encryption.controller;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -12,7 +13,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -187,7 +190,7 @@ public class ControllerEncryption {
         try (FileInputStream inputStream = new FileInputStream(inputFile); FileOutputStream outputStream = new FileOutputStream(outputFile)) {
             Cipher cipher = Cipher.getInstance(RSA);
             cipher.init(mode, publicKey);
-            byte[] inputBytes = new byte[inputFile.toString().length()];
+            byte[] inputBytes = new byte[inputStream.available()];
             while (inputStream.read(inputBytes) > -1) {
                 byte[] outputBytes = cipher.doFinal(inputBytes);
                 outputStream.write(outputBytes);
@@ -195,5 +198,54 @@ public class ControllerEncryption {
         }
     }
     
+    /**
+     * Get privte key for decrypt
+     * @param keyFilePath private key file path
+     * @return private key
+     * @throws FileNotFoundException
+     * @throws IOException
+     * @throws ClassNotFoundException
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeySpecException 
+     */
+    public static PrivateKey getPrivateKey(final String keyFilePath) throws FileNotFoundException, IOException, ClassNotFoundException, NoSuchAlgorithmException, InvalidKeySpecException {
+        BigInteger modulo = null;
+        BigInteger exposant = null;
+        PrivateKey privateKey = null;
+        try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(keyFilePath)))) {
+            modulo = (BigInteger) ois.readObject();
+            exposant = (BigInteger) ois.readObject();
+            RSAPrivateKeySpec specification = new RSAPrivateKeySpec(modulo, exposant);
+            KeyFactory factory = KeyFactory.getInstance(RSA);
+            privateKey = factory.generatePrivate(specification);
+        }       
+        return privateKey;
+    }
+    
+    /**
+     * Decrypt file in RSA
+     * @param mode encrypt or decrypt mode
+     * @param privateKey private key RSA
+     * @param inputFile file to decrypt
+     * @param outputFile decrypted file
+     * @throws FileNotFoundException
+     * @throws IOException
+     * @throws NoSuchAlgorithmException
+     * @throws NoSuchPaddingException
+     * @throws InvalidKeyException
+     * @throws IllegalBlockSizeException
+     * @throws BadPaddingException 
+     */
+    public static void decryptRSA(final int mode, final PrivateKey privateKey, File inputFile, File outputFile) throws FileNotFoundException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        try (FileInputStream inputStream = new FileInputStream(inputFile); FileOutputStream outputStream = new FileOutputStream(outputFile)) {
+            Cipher cipher = Cipher.getInstance(RSA);
+            cipher.init(mode, privateKey);
+            byte[] inputBytes = new byte[inputStream.available()];
+            while (inputStream.read(inputBytes) > -1) {
+                byte[] outputBytes = cipher.doFinal(inputBytes);
+                outputStream.write(outputBytes);
+            }
+        }
+    }
     
 }
