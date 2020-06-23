@@ -277,7 +277,7 @@ public class JfEncryption extends javax.swing.JFrame {
                         SecretKey key = ControllerEncryption.generateAESKey();
                         File keyFile = ControllerEncryption.saveAESKey(key, outputFile.getParent());
                         if (key != null && keyFile.exists()){
-                            ControllerEncryption.cryptingAES(mode, key, inputFile, outputFile);
+                            ControllerEncryption.crypting(mode, key, inputFile, outputFile, AES);
                             jDialogSuccess.setVisible(true);
                         }                      
                     } catch (NoSuchAlgorithmException | IOException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException ex) {
@@ -299,7 +299,7 @@ public class JfEncryption extends javax.swing.JFrame {
 			}
                         byte[] decodedKey = Base64.getDecoder().decode(contentFile);
                         SecretKey key = new SecretKeySpec(decodedKey, 0, decodedKey.length, AES); 
-                        ControllerEncryption.cryptingAES(mode, key, inputFile, outputFile);
+                        ControllerEncryption.crypting(mode, key, inputFile, outputFile, AES);
                         jDialogSuccess.setVisible(true);
                     } catch (IOException | InvalidKeyException | NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException | IllegalArgumentException ex) {
                         jDialogError.setVisible(true);
@@ -315,7 +315,7 @@ public class JfEncryption extends javax.swing.JFrame {
                         KeyPair keyPair = ControllerEncryption.generateRSAKey();
                         File privateKeyFile = ControllerEncryption.saveRSAPrivateKey(keyPair.getPrivate(), outputFile.getParent());
                         if (privateKeyFile.exists()){
-                            ControllerEncryption.encryptRSA(mode, keyPair.getPublic(), inputFile, outputFile);
+                            ControllerEncryption.crypting(mode, keyPair.getPublic(), inputFile, outputFile, RSA);
                             jDialogSuccess.setVisible(true);
                         }                      
                     } catch (NoSuchAlgorithmException | InvalidKeySpecException | IOException | InvalidKeyException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException ex) {
@@ -328,8 +328,8 @@ public class JfEncryption extends javax.swing.JFrame {
                     File outputFile = ControllerEncryption.preFormating(mode, filePath);
                     try {
                         final String keyFilePath = jFileKeyChooser.getSelectedFile().getAbsolutePath();
-                        PrivateKey privateKey = ControllerEncryption.getPrivateKey(keyFilePath);
-                        ControllerEncryption.decryptRSA(mode, privateKey, inputFile, outputFile);
+                        PrivateKey privateKey = ControllerEncryption.getRSAPrivateKey(keyFilePath);
+                        ControllerEncryption.crypting(mode, privateKey, inputFile, outputFile, RSA);
                         jDialogSuccess.setVisible(true);
                     } catch (IOException | NoSuchAlgorithmException | IllegalArgumentException | ClassNotFoundException | InvalidKeySpecException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException ex) {
                         jDialogError.setVisible(true);
