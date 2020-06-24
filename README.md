@@ -1,8 +1,10 @@
 # Java_Encryption
 
 To do :
-- encrypt/decrypt RSA
+- TU
 
 Done :
 - encrypt AES
 - decrypt AES
+- encrypt RSA
+- decrypt RSA
