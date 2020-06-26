@@ -1,6 +1,6 @@
 /*
  * Copyright (C) Jessica LASSIE from 2020 to present
- * All right reserved
+ * All rights reserved
  */
 package fr.jl.encryption;
 
@@ -8,6 +8,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  *
@@ -34,9 +35,8 @@ public class JfEncryptionTest {
     public void tearDown() {
     }
 
-    // TODO add test methods here.
-    // The methods must be annotated with annotation @Test. For example:
-    //
-    // @Test
-    // public void hello() {}
+    @Test
+    public void testCrypting() {
+        
+    }
 }

@@ -6,11 +6,13 @@ package fr.jl.encryption.controller;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -34,6 +36,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  *
@@ -48,12 +51,108 @@ public class ControllerEncryption {
     };
     
     /**
+     * Encrypt a file in AES
+     * @param mode encrypt or decrypt mode
+     * @param filePath file path of input file for output file
+     * @param inputFile file to encrypt
+     * @throws NoSuchAlgorithmException
+     * @throws IOException
+     * @throws FileNotFoundException
+     * @throws InvalidKeyException
+     * @throws NoSuchPaddingException
+     * @throws IllegalBlockSizeException
+     * @throws BadPaddingException 
+     */
+    public static void encryptAES(final int mode, final String filePath, final File inputFile) throws NoSuchAlgorithmException, IOException, FileNotFoundException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+        File outputFile = preFormating(mode, filePath);
+        SecretKey key = generateAESKey();
+        File keyFile = saveAESKey(key, outputFile.getParent());
+        if (key != null && keyFile.exists()){
+            crypting(mode, key, inputFile, outputFile, AES);
+        }       
+    }
+    
+    /**
+     * Decrypt a file in AES
+     * @param mode encrypt or decrypt mode
+     * @param filePath file path of input file for output file
+     * @param keyFilePath path for save the key file
+     * @param inputFile file to decrypt
+     * @throws FileNotFoundException
+     * @throws IOException
+     * @throws InvalidKeyException
+     * @throws NoSuchAlgorithmException
+     * @throws NoSuchPaddingException
+     * @throws IllegalBlockSizeException
+     * @throws BadPaddingException 
+     */
+    public static void decryptAES(final int mode, final String filePath, final String keyFilePath, final File inputFile) throws FileNotFoundException, IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+        File outputFile = preFormating(mode, filePath);
+        BufferedReader reader = new BufferedReader(new FileReader(keyFilePath));
+	String line;
+        String contentFile = "";
+	while ((line = reader.readLine()) != null) {
+            contentFile = line;
+	}
+        byte[] decodedKey = Base64.getDecoder().decode(contentFile);
+        SecretKey key = new SecretKeySpec(decodedKey, 0, decodedKey.length, AES); 
+        crypting(mode, key, inputFile, outputFile, AES);
+    }
+    
+    /**
+     * Encrypt a file in RSA
+     * @param mode encrypt or decrypt mode
+     * @param filePath file path of input file for output file
+     * @param inputFile file to encrypt
+     * @throws InvalidKeySpecException
+     * @throws NoSuchAlgorithmException
+     * @throws IOException
+     * @throws FileNotFoundException
+     * @throws InvalidKeyException
+     * @throws NoSuchPaddingException
+     * @throws IllegalBlockSizeException
+     * @throws BadPaddingException 
+     */
+    public static void encryptRSA(final int mode, final String filePath, final File inputFile) throws InvalidKeySpecException, NoSuchAlgorithmException, IOException, FileNotFoundException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+        File outputFile = preFormating(mode, filePath);
+        KeyPair keyPair = generateRSAKey();
+        File privateKeyFile = saveRSAPrivateKey(keyPair.getPrivate(), outputFile.getParent());
+        if (privateKeyFile.exists()){
+            crypting(mode, keyPair.getPublic(), inputFile, outputFile, RSA);
+        }                      
+    }
+    
+    /**
+     * Decrypt a file in RSA
+     * @param mode encrypt or decrypt mode
+     * @param filePath file path of input file for output file
+     * @param keyFilePath path for save the key file
+     * @param inputFile file to decrypt
+     * @throws IOException
+     * @throws FileNotFoundException
+     * @throws ClassNotFoundException
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeySpecException
+     * @throws InvalidKeyException
+     * @throws NoSuchPaddingException
+     * @throws IllegalBlockSizeException
+     * @throws BadPaddingException 
+     */
+    public static void decryptRSA(final int mode, final String filePath, final String keyFilePath, final File inputFile) throws IOException, FileNotFoundException, ClassNotFoundException, NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+        File outputFile = preFormating(mode, filePath);
+        PrivateKey privateKey = getRSAPrivateKey(keyFilePath);
+        if (privateKey != null) {
+            crypting(mode, privateKey, inputFile, outputFile, RSA);
+        }
+    }
+    
+    /**
      * Create format file
      * @param mode encrypt or decrypt mode
      * @param filePath file path of input file for output file
      * @return file for encrypt or decrypt output
      */
-    public static File preFormating(final int mode, final String filePath) {
+    private static File preFormating(final int mode, final String filePath) {
         SimpleDateFormat formater = new SimpleDateFormat("yyyyMMddHHmmss");
         final String date = formater.format(new Date());
         final int pos = filePath.indexOf('.');
@@ -76,7 +175,7 @@ public class ControllerEncryption {
      * @return key in 128 bits
      * @throws NoSuchAlgorithmException 
      */
-    public static SecretKey generateAESKey() throws NoSuchAlgorithmException {
+    private static SecretKey generateAESKey() throws NoSuchAlgorithmException {
         KeyGenerator keyGen = KeyGenerator.getInstance(AES);
         keyGen.init(128);
         SecretKey secretKey = keyGen.generateKey();
@@ -90,7 +189,7 @@ public class ControllerEncryption {
      * @return file with key
      * @throws IOException
      */
-    public static File saveAESKey(final SecretKey key, final String keyFilePath) throws IOException {
+    private static File saveAESKey(final SecretKey key, final String keyFilePath) throws IOException {
         SimpleDateFormat formater = new SimpleDateFormat("yyyyMMddHHmmss");
         final String date = formater.format(new Date());
         File keyFile = new File(keyFilePath + "\\key_" + date + ".txt");
@@ -108,7 +207,7 @@ public class ControllerEncryption {
      * Generate key pair for RSA crypting
      * @return keys pair (private key and public key)
      */
-    public static KeyPair generateRSAKey() {
+    private static KeyPair generateRSAKey() {
         KeyPairGenerator keyGenerator = null;
         KeyPair keyPair = null;
         try {
@@ -132,7 +231,7 @@ public class ControllerEncryption {
      * @throws NoSuchAlgorithmException 
      * @throws FileNotFoundException 
      */
-    public static File saveRSAPrivateKey(final PrivateKey privateKey, final String privateKeyFilePath) throws InvalidKeySpecException, NoSuchAlgorithmException, FileNotFoundException, IOException {
+    private static File saveRSAPrivateKey(final PrivateKey privateKey, final String privateKeyFilePath) throws InvalidKeySpecException, NoSuchAlgorithmException, FileNotFoundException, IOException {
         SimpleDateFormat formater = new SimpleDateFormat("yyyyMMddHHmmss");
         final String date = formater.format(new Date());
         File privateKeyFile = new File(privateKeyFilePath + "\\key_" + date + ".txt");
@@ -157,13 +256,11 @@ public class ControllerEncryption {
      * @throws NoSuchAlgorithmException
      * @throws InvalidKeySpecException 
      */
-    public static PrivateKey getRSAPrivateKey(final String keyFilePath) throws FileNotFoundException, IOException, ClassNotFoundException, NoSuchAlgorithmException, InvalidKeySpecException {
-        BigInteger modulo = null;
-        BigInteger exposant = null;
+    private static PrivateKey getRSAPrivateKey(final String keyFilePath) throws FileNotFoundException, IOException, ClassNotFoundException, NoSuchAlgorithmException, InvalidKeySpecException {
         PrivateKey privateKey = null;
         try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(keyFilePath)))) {
-            modulo = (BigInteger) ois.readObject();
-            exposant = (BigInteger) ois.readObject();
+            BigInteger modulo = (BigInteger) ois.readObject();
+            BigInteger exposant = (BigInteger) ois.readObject();
             RSAPrivateKeySpec specification = new RSAPrivateKeySpec(modulo, exposant);
             KeyFactory factory = KeyFactory.getInstance(RSA);
             privateKey = factory.generatePrivate(specification);
@@ -186,7 +283,7 @@ public class ControllerEncryption {
      * @throws IllegalBlockSizeException
      * @throws BadPaddingException 
      */    
-    public static void crypting(final int mode, final Key key, File inputFile, File outputFile, final String algorithm) throws FileNotFoundException, IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+    private static void crypting(final int mode, final Key key, File inputFile, File outputFile, final String algorithm) throws FileNotFoundException, IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
         try (FileInputStream inputStream = new FileInputStream(inputFile); FileOutputStream outputStream = new FileOutputStream(outputFile)) {
             Cipher cipher = Cipher.getInstance(algorithm);
             cipher.init(mode, key);
