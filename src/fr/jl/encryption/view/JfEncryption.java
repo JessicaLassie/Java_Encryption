@@ -5,7 +5,6 @@
 package fr.jl.encryption.view;
 
 import fr.jl.encryption.controller.ControllerEncryption;
-import java.io.File;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -37,9 +36,11 @@ public class JfEncryption extends javax.swing.JFrame {
         jComboBoxEncrypt.addItem(AES);
         jComboBoxEncrypt.addItem(RSA);
         jDialogError.setSize(170, 140);
+        jDialogError.setLocationRelativeTo(null);
         jDialogSuccess.setSize(170, 140);
+        jDialogSuccess.setLocationRelativeTo(null);
         jButtonStart.setEnabled(false);
-        
+        setLocationRelativeTo(null);        
     }
 
     /**
@@ -74,6 +75,8 @@ public class JfEncryption extends javax.swing.JFrame {
 
         jDialogError.setTitle("Erreur");
 
+        jLabelError.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+
         jButtonDialogError.setText("OK");
         jButtonDialogError.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -86,27 +89,25 @@ public class JfEncryption extends javax.swing.JFrame {
         jDialogErrorLayout.setHorizontalGroup(
             jDialogErrorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jDialogErrorLayout.createSequentialGroup()
-                .addGroup(jDialogErrorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jDialogErrorLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jLabelError, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jDialogErrorLayout.createSequentialGroup()
-                        .addGap(59, 59, 59)
-                        .addComponent(jButtonDialogError)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap()
+                .addGroup(jDialogErrorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(jButtonDialogError)
+                    .addComponent(jLabelError, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         jDialogErrorLayout.setVerticalGroup(
             jDialogErrorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jDialogErrorLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabelError)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 32, Short.MAX_VALUE)
+                .addComponent(jLabelError, javax.swing.GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jButtonDialogError)
                 .addContainerGap())
         );
 
         jDialogSuccess.setTitle("Success");
 
+        jLabelSuccess.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabelSuccess.setText("Success");
 
         jButtonDialogSuccess.setText("OK");
@@ -134,8 +135,8 @@ public class JfEncryption extends javax.swing.JFrame {
             jDialogSuccessLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jDialogSuccessLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabelSuccess)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
+                .addComponent(jLabelSuccess, javax.swing.GroupLayout.DEFAULT_SIZE, 26, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jButtonDialogSuccess)
                 .addContainerGap())
         );
@@ -260,53 +261,12 @@ public class JfEncryption extends javax.swing.JFrame {
 
     private void jButtonStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStartActionPerformed
         final String filePath = jFileChooser.getSelectedFile().getAbsolutePath();
-        File inputFile = new File(filePath);
         switch (jComboBoxEncrypt.getSelectedItem().toString()) {
             case AES:
-                if (jRadioButtonEncrypt.isSelected()) {
-                    int mode = Cipher.ENCRYPT_MODE;
-                    try {
-                        ControllerEncryption.encryptAES(mode, filePath, inputFile);
-                        jDialogSuccess.setVisible(true);               
-                    } catch (NoSuchAlgorithmException | IOException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException ex) {
-                        jDialogError.setVisible(true);
-                        jLabelError.setText(ex.getMessage());
-                    }
-                }
-                if (jRadioButtonDecrypt.isSelected()) {
-                    int mode = Cipher.DECRYPT_MODE;
-                    final String keyFilePath = jFileKeyChooser.getSelectedFile().getAbsolutePath();
-                    try {
-                        ControllerEncryption.decryptAES(mode, filePath, keyFilePath, inputFile);
-                        jDialogSuccess.setVisible(true);
-                    } catch (IOException | InvalidKeyException | NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException | IllegalArgumentException ex) {
-                        jDialogError.setVisible(true);
-                        jLabelError.setText(ex.getMessage());
-                    }
-                }
+                cryptingAES(filePath);               
                 break;
             case RSA:
-                if (jRadioButtonEncrypt.isSelected()) {
-                    int mode = Cipher.ENCRYPT_MODE;
-                    try {
-                        ControllerEncryption.encryptRSA(mode, filePath, inputFile);
-                        jDialogSuccess.setVisible(true);                   
-                    } catch (NoSuchAlgorithmException | InvalidKeySpecException | IOException | InvalidKeyException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException ex) {
-                        jDialogError.setVisible(true);
-                        jLabelError.setText(ex.getMessage());
-                    }
-                }
-                if (jRadioButtonDecrypt.isSelected()) {
-                    int mode = Cipher.DECRYPT_MODE;
-                    final String keyFilePath = jFileKeyChooser.getSelectedFile().getAbsolutePath();
-                    try {
-                        ControllerEncryption.decryptRSA(mode, filePath, keyFilePath, inputFile);
-                        jDialogSuccess.setVisible(true);
-                    } catch (IOException | NoSuchAlgorithmException | IllegalArgumentException | ClassNotFoundException | InvalidKeySpecException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException ex) {
-                        jDialogError.setVisible(true);
-                        jLabelError.setText(ex.getMessage());
-                    }
-                }
+                cryptingRSA(filePath);
                 break;
             default :
                 break;
@@ -395,4 +355,60 @@ public class JfEncryption extends javax.swing.JFrame {
     private javax.swing.JRadioButton jRadioButtonDecrypt;
     private javax.swing.JRadioButton jRadioButtonEncrypt;
     // End of variables declaration//GEN-END:variables
+
+    /**
+     * Encrypt or decrypt in AES
+     * @param filePath to encrypt or decrypt
+     */
+    private void cryptingAES(String filePath) {
+        if (jRadioButtonEncrypt.isSelected()) {
+            int mode = Cipher.ENCRYPT_MODE;
+            try {
+                ControllerEncryption.encryptAES(mode, filePath);
+                jDialogSuccess.setVisible(true);               
+            } catch (NoSuchAlgorithmException | IOException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException ex) {
+                jDialogError.setVisible(true);
+                jLabelError.setText(ex.getMessage());
+            }
+        }
+        if (jRadioButtonDecrypt.isSelected()) {
+            int mode = Cipher.DECRYPT_MODE;
+            final String keyFilePath = jFileKeyChooser.getSelectedFile().getAbsolutePath();
+            try {
+                ControllerEncryption.decryptAES(mode, filePath, keyFilePath);
+                jDialogSuccess.setVisible(true);
+            } catch (IOException | InvalidKeyException | NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException | IllegalArgumentException ex) {
+                jDialogError.setVisible(true);
+                jLabelError.setText(ex.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Encrypt or decrypt in RSA
+     * @param filePath to encrypt or decrypt
+     */
+    private void cryptingRSA(String filePath) {
+        if (jRadioButtonEncrypt.isSelected()) {
+            int mode = Cipher.ENCRYPT_MODE;
+            try {
+                ControllerEncryption.encryptRSA(mode, filePath);
+                jDialogSuccess.setVisible(true);                   
+            } catch (NoSuchAlgorithmException | InvalidKeySpecException | IOException | InvalidKeyException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException ex) {
+                jDialogError.setVisible(true);
+                jLabelError.setText(ex.getMessage());
+            }
+        }
+        if (jRadioButtonDecrypt.isSelected()) {
+            int mode = Cipher.DECRYPT_MODE;
+            final String keyFilePath = jFileKeyChooser.getSelectedFile().getAbsolutePath();
+            try {
+                ControllerEncryption.decryptRSA(mode, filePath, keyFilePath);
+                jDialogSuccess.setVisible(true);
+            } catch (IOException | NoSuchAlgorithmException | IllegalArgumentException | ClassNotFoundException | InvalidKeySpecException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException ex) {
+                jDialogError.setVisible(true);
+                jLabelError.setText(ex.getMessage());
+            }
+        }
+    }
 }
