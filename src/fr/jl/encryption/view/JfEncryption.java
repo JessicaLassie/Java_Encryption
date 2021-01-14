@@ -35,7 +35,7 @@ public class JfEncryption extends javax.swing.JFrame {
         jRadioButtonEncrypt.setSelected(true);
         jComboBoxEncrypt.addItem(AES);
         jComboBoxEncrypt.addItem(RSA);
-        jDialogError.setSize(170, 140);
+        jDialogError.setSize(290, 140);
         jDialogError.setLocationRelativeTo(null);
         jDialogSuccess.setSize(170, 140);
         jDialogSuccess.setLocationRelativeTo(null);
@@ -73,7 +73,7 @@ public class JfEncryption extends javax.swing.JFrame {
         jButtonSearchKey = new javax.swing.JButton();
         jLabelSelectedKey = new javax.swing.JLabel();
 
-        jDialogError.setTitle("Erreur");
+        jDialogError.setTitle("Error");
 
         jLabelError.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 
@@ -92,7 +92,7 @@ public class JfEncryption extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jDialogErrorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(jButtonDialogError)
-                    .addComponent(jLabelError, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jLabelError, javax.swing.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jDialogErrorLayout.setVerticalGroup(
@@ -263,10 +263,22 @@ public class JfEncryption extends javax.swing.JFrame {
         final String filePath = jFileChooser.getSelectedFile().getAbsolutePath();
         switch (jComboBoxEncrypt.getSelectedItem().toString()) {
             case AES:
-                cryptingAES(filePath);               
+                try {
+                    cryptingAES(filePath);
+                    jDialogSuccess.setVisible(true);
+                } catch (Exception e) {
+                    jDialogError.setVisible(true);
+                    jLabelError.setText(e.getMessage());
+                }
                 break;
-            case RSA:
-                cryptingRSA(filePath);
+            case RSA:                
+                try {
+                    cryptingRSA(filePath);
+                    jDialogSuccess.setVisible(true);
+                } catch (Exception e) {
+                    jDialogError.setVisible(true);
+                    jLabelError.setText(e.getMessage());
+                }
                 break;
             default :
                 break;
